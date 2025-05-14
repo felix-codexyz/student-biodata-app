@@ -4,9 +4,9 @@ import StudentList from './components/StudentList';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Student Biodata Management</h1>
+    <div className="min-h-screen gradient-bg flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full space-y-6">
+        <h1 className="text-4xl font-bold text-center text-indigo">Student Biodata</h1>
         <StudentForm />
         <StudentList />
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { API, graphqlOperation } from 'aws-amplify';
-import { listStudents } from '../graphql/queries';
-import { deleteStudent } from '../graphql/mutations';
+import { API } from 'aws-amplify';
+import * as queries from '../graphql/queries';
+import * as mutations from '../graphql/mutations';
 
 function StudentList() {
   const [students, setStudents] = useState([]);
@@ -12,8 +12,8 @@ function StudentList() {
 
   const fetchStudents = async () => {
     try {
-      const studentData = await API.graphql(graphqlOperation(listStudents));
-      setStudents(studentData.data.listStudents.items);
+      const result = await API.graphql({ query: queries.listStudents });
+      setStudents(result.data.listStudents.items);
     } catch (error) {
       console.error('Error fetching students:', error);
     }
@@ -21,55 +21,37 @@ function StudentList() {
 
   const handleDelete = async (id) => {
     try {
-      await API.graphql(graphqlOperation(deleteStudent, { input: { id } }));
-      setStudents(students.filter((student) => student.id !== id));
-      alert('Student deleted successfully!');
+      await API.graphql({
+        query: mutations.deleteStudent,
+        variables: { input: { id } },
+      });
+      fetchStudents();
     } catch (error) {
       console.error('Error deleting student:', error);
-      alert('Failed to delete student.');
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Student List</h2>
-      {students.length === 0 ? (
-        <p>No students found.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">First Name</th>
-                <th className="py-2 px-4 border-b">Last Name</th>
-                <th className="py-2 px-4 border-b">Date of Birth</th>
-                <th className="py-2 px-4 border-b">Email</th>
-                <th className="py-2 px-4 border-b">Phone</th>
-                <th className="py-2 px-4 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student) => (
-                <tr key={student.id}>
-                  <td className="py-2 px-4 border-b">{student.firstName}</td>
-                  <td className="py-2 px-4 border-b">{student.lastName}</td>
-                  <td className="py-2 px-4 border-b">{student.dateOfBirth}</td>
-                  <td className="py-2 px-4 border-b">{student.email}</td>
-                  <td className="py-2 px-4 border-b">{student.phone}</td>
-                  <td className="py-2 px-4 border-b">
-                    <button
-                      onClick={() => handleDelete(student.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className="space-y-4">
+      {students.map((student) => (
+        <div
+          key={student.id}
+          className="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex justify-between items-center"
+        >
+          <div>
+            <h3 className="text-lg font-semibold text-indigo">
+              {student.firstName} {student.lastName}
+            </h3>
+            <p className="text-gray-600">{student.email}</p>
+          </div>
+          <button
+            onClick={() => handleDelete(student.id)}
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-300"
+          >
+            Delete
+          </button>
         </div>
-      )}
+      ))}
     </div>
   );
 }
